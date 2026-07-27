@@ -1,0 +1,43 @@
+[tool.commitizen]
+name = "cz_customize"
+version = "0.1.0"
+tag_format = "v$version"
+
+[tool.commitizen.customize]
+message_template = "{{change_type}}{% if scope %}({{scope}}){% endif %}: {{message}}{% if body %}\n\n{{body}}{% endif %}"
+example = "feat(scanner): add regex constraint validation"
+schema = "<type>[(<scope>)]: <message>\n<BLANK LINE>\n<body>"
+schema_pattern = "(?s)(feat|fix|docs|style|refactor|test|build)(\\(\\S+\\))?:\\s[^\\n\\r]+((\\n\\n.*)|(\\s*))$"
+
+[[tool.commitizen.customize.questions]]
+type = "list"
+name = "change_type"
+message = "Select the type of change you are committing"
+choices = [
+    { value = "feat", name = "feat: A new feature" },
+    { value = "fix", name = "fix: A bug fix" },
+    { value = "docs", name = "docs: Documentation only changes" },
+    { value = "style", name = "style: Formatting, no code change" },
+    { value = "refactor", name = "refactor: Code change that neither fixes a bug nor adds a feature" },
+    { value = "test", name = "test: Adding or correcting tests" },
+    { value = "build", name = "build: Changes affecting the build system" },
+]
+
+[[tool.commitizen.customize.questions]]
+type = "list"
+name = "scope"
+message = "Select the scope of this change"
+choices = [
+    { value = "scanner", name = "scanner" },
+    { value = "", name = "(none)" },
+]
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "message"
+message = "Write a short, imperative description of the change\n"
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "body"
+message = "Provide additional contextual information about the change: (press [enter] to skip)\n"
