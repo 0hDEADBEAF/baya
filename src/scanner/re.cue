@@ -1,7 +1,7 @@
 package scanner
 
 #DigitSeparator: "'"
-#MagnitudeOrder: "(m|μ||n|p|K|M|G|T)"
+#MagnitudeOrder: "(K|M|G|T|Ki|Mi|Gi|Ti)"
 
 #IntegerPattern: {
     prefix: string | *""
