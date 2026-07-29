@@ -3,3 +3,6 @@ playground
 
 # Rust build directory
 target
+
+# d2 automatically generated diagrams
+doc/*.svg

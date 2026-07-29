@@ -1,0 +1,211 @@
+direction: down
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 8
+  }
+}
+
+style: {
+  fill: "#ffffff"
+}
+
+classes: {
+  default_subgraph: {
+    style: {
+      stroke: "#383327"
+      stroke-width: 2
+      stroke-dash: 0
+      fill: "#fcf7d9"
+      fill-pattern: dots
+      border-radius: 0
+      shadow: true
+      3d: false
+      multiple: false
+      double-border: true
+      # font
+      font-size: 24
+      font-color: "#141413"
+      animated: false
+      underline: false
+      italic: false
+      bold: true
+      text-transform: none
+    }
+  }
+  default_node: {
+    shape: rectangle
+    label.near: center-center
+    style: {
+      stroke: "#000000"
+      stroke-width: 2
+      stroke-dash: 0
+      fill: "#efe6cb"
+      fill-pattern: none
+      border-radius: 0
+      shadow: false
+      3d: false
+      multiple: false
+      double-border: false
+      # font
+      font-size: 12
+      font-color: "#141413"
+      animated: false
+      underline: false
+      italic: false
+      bold: false
+      text-transform: none
+    }
+  }
+  default_link: {
+    style: {
+      stroke: "#383327"
+      stroke-width: 2
+      stroke-dash: 0
+      border-radius: 5
+      # font
+      font-size: 12
+      font-color: "#3d3c3b"
+      animated: false
+      underline: false
+      italic: true
+      bold: false
+      text-transform: none
+    }
+  }
+  file_node: {
+    shape: page
+    height: 50
+    style: {
+      font: mono
+      fill: "#c0eaf9"
+    }
+  }
+  command_node: {
+    shape: oval
+    style: {
+      font: mono
+      fill: "#ffbbb2"
+    }
+  }
+  note_node: {
+    shape: rectangle
+    style: {
+      opacity: 0.7
+      fill: "#e5e5e5"
+      stroke-dash: 3
+      stroke-width: 1
+      border-radius: 10
+      font-size: 11
+      italic: true
+    }
+  }
+  question_node: {
+    shape: diamond
+    style: {
+      fill: "#ffbae6"
+    }
+  }
+  note_link: {
+    style: {
+      stroke-width: 1
+      stroke-dash: 3
+      font-size: 11
+    }
+  }
+  input_link: {
+    target-arrowhead: {
+      style.filled: true
+    }
+  }
+  generated_node: {
+    shape: page
+    style: {
+      bold: false
+      fill: "#ccbffc"
+    }
+  }
+  action_link: {
+    style: {
+      stroke: "#d33a26"
+      font-color: "#d33a26"
+    }
+  }
+  rust_node: {
+    icon: ./assets/icons/rust.svg
+    icon.near: bottom-right
+  }
+  json_node: {
+    icon: ./assets/icons/json.svg
+    icon.near: bottom-right
+  }
+  cue_node: {
+    icon: ./assets/icons/cue.svg
+    icon.near: bottom-right
+  }
+}
+
+start: "Start"
+cargo_run: "> cargo run"
+run_prebuild: |md
+  <div style="text-align: center">
+  
+    `$OUT_DIR/re.json` \
+    needs to be \
+    regenerated?
+  
+  </div>
+|
+scanner: "Scanner"
+
+start -> cargo_run -> run_prebuild
+run_prebuild -> prebuild.build_rs: "runs" {
+  source-arrowhead: yes
+}
+run_prebuild -> scanner: {
+  source-arrowhead: no
+}
+
+# Prebuild phase
+prebuild: Prebuild phase {
+  build_rs: "build.rs"
+  cue_re: "src/scanner/re.cue"
+  cue_constraints: "src/scanner/constraints.cue"
+  cue_generated_re: "\$OUT_DIR/re.json"
+  cue_export: "> cue export"
+  cue_re_note: "This file contains the regular expressions\nfor each token recognized by Baya."
+  cue_constraints_note: "This file contains the constraints for the\nregular expressions. It ensures the\ngenerated JSON file will be valid so it\ncan be used directly without needing to\nverify that the data is correct."
+
+  build_rs.class: [default_node; file_node; rust_node]
+  cue_re.class: [default_node; file_node; cue_node]
+  cue_constraints.class: [default_node; file_node; cue_node]
+  cue_generated_re.class: [default_node; file_node; generated_node; json_node]
+  cue_export.class: [default_node; command_node]
+  cue_re_note.class: [default_node; note_node]
+  cue_constraints_note.class: [default_node; note_node]
+
+  build_rs -> cue_export: "invokes"
+  cue_constraints -> cue_export
+  cue_re -> cue_export
+  cue_export -> cue_generated_re: "generates"
+  cue_re_note -- cue_re
+  cue_constraints_note -- cue_constraints
+  cue_generated_re -> _.scanner
+
+  (build_rs -> cue_export)[0].class: [default_link; action_link]
+  (cue_constraints -> cue_export)[0].class: [default_link]
+  (cue_re -> cue_export)[0].class: [default_link; input_link]
+  (cue_export -> cue_generated_re)[0].class: [default_link; action_link]
+  (cue_re_note -- cue_re)[0].class: [default_link; note_link]
+  (cue_constraints_note -- cue_constraints)[0].class: [default_link; note_link]
+}
+
+start.class: [default_node]
+start.style.bold: true
+cargo_run.class: [default_node; command_node]
+run_prebuild.class: [default_node; question_node]
+prebuild.class: [default_subgraph]
+scanner.class: [default_node]
+(run_prebuild -> prebuild.build_rs)[0].class: [default_link; action_link]
+(run_prebuild -> scanner)[0].class: [default_link]
